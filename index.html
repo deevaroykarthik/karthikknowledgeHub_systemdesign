@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Design Interview — The Complete Guide 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#06090f;--s1:#0d1321;--s2:#131b2e;--s3:#192340;
+  --a1:#64ffda;--a2:#7c4dff;--a3:#ff6b9d;--a4:#ffd740;--a5:#40c4ff;
+  --text:#c8d6e5;--muted:#6b7d99;--white:#f0f4fa;--border:#1a2744;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);line-height:1.72;overflow-x:hidden}
+
+/* Hero */
+.hero{position:relative;padding:64px 24px 44px;text-align:center;overflow:hidden;
+  background:linear-gradient(160deg,#06090f,#0f1a33 40%,#0a0f1e 80%,#06090f)}
+.hero::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 30% 40%,rgba(100,255,218,.06),transparent 55%),
+             radial-gradient(ellipse at 70% 60%,rgba(124,77,255,.05),transparent 50%);
+  animation:heroGlow 12s ease-in-out infinite alternate}
+@keyframes heroGlow{0%{opacity:.7}100%{opacity:1;transform:scale(1.02)}}
+.hero .grid-bg{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(100,255,218,.03) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(100,255,218,.03) 1px,transparent 1px);
+  background-size:60px 60px;mask:radial-gradient(ellipse,black 30%,transparent 70%)}
+.hero h1{font-family:'Instrument Serif',serif;font-size:clamp(2.2rem,6vw,4rem);font-weight:400;
+  color:var(--white);position:relative;line-height:1.15;margin-bottom:4px}
+.hero h1 em{font-style:italic;color:var(--a1)}
+.hero .sub{color:var(--muted);font-size:.95rem;position:relative;margin-bottom:10px}
+.hero .author{position:relative;display:inline-flex;align-items:center;gap:8px;
+  padding:6px 18px;border-radius:20px;background:rgba(100,255,218,.06);
+  border:1px solid rgba(100,255,218,.12);font-size:.78rem;font-weight:600;color:var(--a1)}
+.hero .copy-badge{position:relative;margin-top:10px;font-size:.68rem;color:var(--muted);letter-spacing:.4px}
+
+/* Tabs */
+.tabs{display:flex;background:var(--s1);border-bottom:1px solid var(--border);
+  overflow-x:auto;position:sticky;top:0;z-index:100;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:14px 18px;font-family:'Space Grotesk',sans-serif;font-size:.8rem;font-weight:600;
+  color:var(--muted);background:none;border:none;cursor:pointer;
+  border-bottom:3px solid transparent;white-space:nowrap;transition:.25s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--a1);border-bottom-color:var(--a1)}
+
+/* Tab content */
+.tc{display:none;padding:32px 20px;max-width:960px;margin:0 auto}
+.tc.active{display:block}
+.tc::before{content:'© Karthik — SDE-IC2 @ServiceNow';position:fixed;top:50%;left:50%;
+  transform:translate(-50%,-50%) rotate(-30deg);font-size:clamp(1.8rem,5vw,3.5rem);
+  font-weight:700;color:rgba(100,255,218,.03);pointer-events:none;white-space:nowrap;z-index:0}
+.tc>*{position:relative;z-index:1}
+
+/* Badges */
+.badge{display:inline-flex;padding:3px 12px;border-radius:16px;font-size:.68rem;
+  font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px}
+.ba1{background:rgba(100,255,218,.1);color:var(--a1)}
+.ba2{background:rgba(124,77,255,.1);color:var(--a2)}
+.ba3{background:rgba(255,107,157,.1);color:var(--a3)}
+.ba4{background:rgba(255,215,64,.1);color:var(--a4)}
+.ba5{background:rgba(64,196,255,.1);color:var(--a5)}
+
+h2{font-family:'Instrument Serif',serif;font-size:1.6rem;font-weight:400;color:var(--white);margin-bottom:18px}
+h3{font-size:1.05rem;font-weight:700;color:var(--white);margin:24px 0 10px}
+
+/* Cards */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:24px;
+  margin-bottom:20px;transition:.3s}
+.card:hover{border-color:rgba(100,255,218,.2);box-shadow:0 4px 30px rgba(100,255,218,.04)}
+.ct{font-size:1rem;font-weight:700;color:var(--white);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.ct .n{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;
+  border-radius:8px;font-size:.75rem;font-weight:700;flex-shrink:0}
+.n1{background:rgba(100,255,218,.15);color:var(--a1)}
+.n2{background:rgba(124,77,255,.15);color:var(--a2)}
+.n3{background:rgba(255,107,157,.15);color:var(--a3)}
+
+/* Company & difficulty tags */
+.tag{display:inline-block;padding:2px 8px;border-radius:5px;font-size:.68rem;font-weight:700;margin:0 3px 4px 0}
+.t-amz{background:rgba(255,153,0,.12);color:#ff9900}
+.t-ggl{background:rgba(66,133,244,.12);color:#4285f4}
+.t-meta{background:rgba(24,119,242,.12);color:#1877f2}
+.t-ms{background:rgba(0,120,215,.12);color:#0078d7}
+.t-apl{background:rgba(169,169,169,.12);color:#c0c0c0}
+.t-nflx{background:rgba(229,9,20,.12);color:#e50914}
+.t-uber{background:rgba(0,0,0,.12);color:#fff;border:1px solid #333}
+.t-twtr{background:rgba(29,161,242,.12);color:#1da1f2}
+.t-strp{background:rgba(99,91,255,.12);color:#635bff}
+.t-spot{background:rgba(30,215,96,.12);color:#1ed760}
+.t-lnkd{background:rgba(0,119,181,.12);color:#0077b5}
+.t-dd{background:rgba(255,48,48,.12);color:#ff3030}
+.diff{display:inline-block;padding:2px 8px;border-radius:5px;font-size:.66rem;font-weight:700;margin-left:4px}
+.d-e{background:rgba(100,255,218,.1);color:var(--a1)}
+.d-m{background:rgba(255,215,64,.1);color:var(--a4)}
+.d-h{background:rgba(255,107,157,.1);color:var(--a3)}
+
+/* Architecture diagrams */
+.arch{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:20px;margin:14px 0;overflow-x:auto}
+.arch svg{display:block;margin:0 auto;max-width:100%}
+.arch-label{text-align:center;font-size:.72rem;color:var(--muted);margin-top:8px}
+
+/* Animated SVG nodes */
+@keyframes pulse{0%,100%{opacity:.7}50%{opacity:1}}
+@keyframes dataFlow{0%{stroke-dashoffset:20}100%{stroke-dashoffset:0}}
+.node-anim{animation:pulse 2.5s ease-in-out infinite}
+.flow-line{stroke-dasharray:6 4;animation:dataFlow 1.5s linear infinite}
+
+/* Concept pills in building blocks */
+.concept-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin:14px 0}
+.concept-pill{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:16px;
+  transition:.3s;cursor:default}
+.concept-pill:hover{border-color:rgba(100,255,218,.3);transform:translateY(-2px)}
+.concept-pill h4{font-size:.88rem;color:var(--white);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.concept-pill p{font-size:.78rem;color:var(--muted);line-height:1.6}
+
+pre{background:#080d18;border:1px solid var(--border);border-radius:8px;padding:16px;
+  overflow-x:auto;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:.76rem;
+  line-height:1.65;color:#c9d1d9}
+.kw{color:#ff7b72}.ty{color:#79c0ff}.st{color:#a5d6ff}.cm{color:#6e7a8a;font-style:italic}
+.fn{color:#d2a8ff}.an{color:#ffa657}
+
+.tip{background:rgba(100,255,218,.04);border-left:3px solid var(--a1);
+  border-radius:0 8px 8px 0;padding:14px 18px;margin:18px 0;font-size:.88rem}
+.tip strong{color:var(--a1)}
+
+.a{color:var(--text);font-size:.9rem;line-height:1.78}
+.a strong{color:var(--white)}
+
+.divider{height:1px;background:var(--border);margin:28px 0}
+
+/* Footer */
+.footer{text-align:center;padding:32px 20px;border-top:1px solid var(--border);background:var(--s1)}
+.footer .shield{display:inline-flex;align-items:center;gap:6px;padding:7px 18px;border-radius:20px;
+  background:rgba(100,255,218,.06);border:1px solid rgba(100,255,218,.12);
+  color:var(--a1);font-weight:700;font-size:.82rem;margin-bottom:12px}
+.footer .shield svg{width:16px;height:16px;fill:var(--a1)}
+.footer p{color:var(--muted);font-size:.8rem;margin-top:4px}
+.footer a{color:var(--a1);text-decoration:none}
+.footer a:hover{text-decoration:underline}
+.footer .legal{font-size:.7rem;color:#3d4f6f;margin-top:10px}
+
+@media(max-width:640px){
+  .tab{padding:12px 12px;font-size:.74rem}.tc{padding:24px 14px}
+  .card{padding:18px}pre{font-size:.7rem;padding:12px}
+  .concept-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="grid-bg"></div>
+  <h1>System Design <em>Interview</em></h1>
+  <p class="sub">Building Blocks • Architecture Patterns • 15+ Real Problems • Interactive Diagrams</p>
+  <div class="author">Karthik — SDE-IC2 @ServiceNow &nbsp;|&nbsp; 📺 Karthik_Knowledge Hub</div>
+  <div class="copy-badge">© 2026 KARTHIK_KNOWLEDGE HUB — ALL RIGHTS RESERVED</div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="st('t1',this)">🧱 Building Blocks</button>
+  <button class="tab" onclick="st('t2',this)">📐 Framework</button>
+  <button class="tab" onclick="st('t3',this)">🟢 Easy</button>
+  <button class="tab" onclick="st('t4',this)">🟡 Medium</button>
+  <button class="tab" onclick="st('t5',this)">🔴 Hard</button>
+  <button class="tab" onclick="st('t6',this)">🎯 Cheat Sheet</button>
+</div>
+
+<!-- ===== TAB 1: BUILDING BLOCKS ===== -->
+<div id="t1" class="tc active">
+<span class="badge ba1">FUNDAMENTALS</span>
+<h2>System Design Building Blocks</h2>
+<p style="color:var(--muted);margin-bottom:20px">Master these 12 core components before solving any design problem. Every system is composed of these primitives.</p>
+
+<div class="concept-grid">
+  <div class="concept-pill"><h4>⚖️ Load Balancer</h4><p>Distributes traffic across servers. L4 (TCP) vs L7 (HTTP). Algorithms: Round Robin, Least Connections, Consistent Hashing. Examples: Nginx, AWS ALB, HAProxy.</p></div>
+  <div class="concept-pill"><h4>🗄️ Database</h4><p><strong>SQL</strong> — ACID, joins, normalized. PostgreSQL, MySQL.<br><strong>NoSQL</strong> — BASE, denormalized. MongoDB (document), Cassandra (wide-column), DynamoDB (key-value).</p></div>
+  <div class="concept-pill"><h4>⚡ Cache</h4><p>In-memory storage for hot data. Redis, Memcached. Strategies: Cache-Aside, Write-Through, Write-Behind. Eviction: LRU, LFU, TTL.</p></div>
+  <div class="concept-pill"><h4>🌐 CDN</h4><p>Content Delivery Network. Serves static content from edge locations closest to users. Push vs Pull CDN. CloudFront, Akamai, Cloudflare.</p></div>
+  <div class="concept-pill"><h4>📨 Message Queue</h4><p>Async communication between services. Decouples producers & consumers. Kafka, RabbitMQ, SQS. Enables event-driven architecture.</p></div>
+  <div class="concept-pill"><h4>🔍 Search Index</h4><p>Full-text search at scale. Inverted index, tokenization, relevance scoring. Elasticsearch, Apache Solr. Used in typeahead, product search.</p></div>
+  <div class="concept-pill"><h4>🗂️ Blob Storage</h4><p>Store large binary objects — images, videos, files. Amazon S3, Azure Blob, GCS. Paired with CDN for delivery. Immutable, content-addressed.</p></div>
+  <div class="concept-pill"><h4>🔗 API Gateway</h4><p>Single entry point for all client requests. Handles authentication, rate limiting, routing, SSL termination. Kong, AWS API Gateway.</p></div>
+  <div class="concept-pill"><h4>📊 Sharding</h4><p>Horizontal partitioning of data. Hash-based, range-based, geo-based. Consistent hashing avoids hot spots. Each shard holds a subset of data.</p></div>
+  <div class="concept-pill"><h4>📋 Replication</h4><p>Copies data across multiple nodes. Leader-Follower (reads scale) or Multi-Leader. Sync vs Async replication. Trade-off: consistency vs availability.</p></div>
+  <div class="concept-pill"><h4>🧮 Rate Limiter</h4><p>Controls request frequency. Token Bucket, Leaky Bucket, Sliding Window. Prevents abuse, protects resources. Usually in API Gateway or middleware.</p></div>
+  <div class="concept-pill"><h4>🔔 Pub/Sub</h4><p>Publish-Subscribe pattern. Producers publish events; subscribers receive them. Fan-out. Google Pub/Sub, SNS, Kafka Topics. Powers notifications, feeds.</p></div>
+</div>
+
+<div class="divider"></div>
+
+<h3>Key Theorems & Concepts</h3>
+<div class="card">
+<div class="a">
+<strong>CAP Theorem</strong> — A distributed system can only guarantee 2 of 3: <strong>Consistency</strong> (all nodes see the same data), <strong>Availability</strong> (every request gets a response), <strong>Partition Tolerance</strong> (system works despite network splits). In reality, P is non-negotiable → you choose CP (banking) or AP (social media).<br><br>
+<strong>ACID vs BASE</strong> — ACID (Atomicity, Consistency, Isolation, Durability) for SQL transactions. BASE (Basically Available, Soft state, Eventually consistent) for NoSQL at scale.<br><br>
+<strong>Consistent Hashing</strong> — Maps data to a hash ring. When a node is added/removed, only K/n keys need remapping (not all). Used in DynamoDB, Cassandra, CDNs.<br><br>
+<strong>Read-Heavy vs Write-Heavy</strong> — Read-heavy: add caching, replicas, CDN. Write-heavy: use message queues, write-behind cache, async processing, CQRS pattern.<br><br>
+<strong>Horizontal vs Vertical Scaling</strong> — Vertical = bigger machine (limited ceiling). Horizontal = more machines (sharding needed, complexity increases, but practically unlimited).
+</div>
+</div>
+</div>
+
+<!-- ===== TAB 2: FRAMEWORK ===== -->
+<div id="t2" class="tc">
+<span class="badge ba2">APPROACH</span>
+<h2>The 45-Minute Framework</h2>
+<p style="color:var(--muted);margin-bottom:20px">A step-by-step structure for answering ANY system design question in a 45-60 minute interview.</p>
+
+<div class="card">
+<div class="ct"><span class="n n2">1</span> Requirements & Scope (5 min)</div>
+<div class="a">
+Ask clarifying questions to narrow the scope. Identify:<br>
+<strong>Functional requirements</strong> — What must the system do? (e.g., "Users can upload and stream videos")<br>
+<strong>Non-functional requirements</strong> — Scale, latency, availability, consistency expectations<br>
+<strong>Out of scope</strong> — Explicitly state what you won't design (e.g., "Payment is out of scope")<br><br>
+<em>"Design YouTube"</em> → You: "Let me focus on video upload, transcoding, and streaming. Should I include recommendations or search?"
+</div>
+</div>
+
+<div class="card">
+<div class="ct"><span class="n n2">2</span> Capacity Estimation (3-5 min)</div>
+<div class="a">
+Back-of-envelope math to understand scale:<br>
+<strong>Users:</strong> DAU, peak concurrent users<br>
+<strong>Storage:</strong> Data per user × total users × retention period<br>
+<strong>Bandwidth:</strong> Read/write ratio, request rate (QPS)<br><br>
+Example for Twitter: 500M DAU × 2 tweets/day = 1B writes/day ≈ 12K writes/sec. Read-heavy: 100:1 read/write ratio = 1.2M reads/sec.
+</div>
+</div>
+
+<div class="card">
+<div class="ct"><span class="n n2">3</span> API Design (3-5 min)</div>
+<div class="a">
+Define the key API endpoints:<br>
+<pre><span class="cm">// Example: URL Shortener</span>
+POST /api/v1/shorten   { longUrl: "...", customAlias?: "..." }
+  → { shortUrl: "tny.co/abc123", expiresAt: "..." }
+
+GET  /:shortCode
+  → 301 Redirect to original URL</pre>
+Keep it RESTful. Mention authentication, pagination, and rate limiting.
+</div>
+</div>
+
+<div class="card">
+<div class="ct"><span class="n n2">4</span> Data Model (3-5 min)</div>
+<div class="a">
+Define entities, attributes, and relationships. Choose SQL vs NoSQL with justification:<br>
+<pre><span class="cm">// URL Shortener — SQL schema</span>
+urls (
+  id          BIGINT PRIMARY KEY,
+  short_code  VARCHAR(8) UNIQUE,
+  long_url    TEXT NOT NULL,
+  user_id     BIGINT REFERENCES users(id),
+  created_at  TIMESTAMP,
+  expires_at  TIMESTAMP,
+  click_count BIGINT DEFAULT 0
+)</pre>
+</div>
+</div>
+
+<div class="card">
+<div class="ct"><span class="n n2">5</span> High-Level Design (10 min)</div>
+<div class="a">
+Draw the architecture diagram showing major components and data flow. This is where you connect: clients → load balancer → app servers → database/cache/queue → storage.<br><br>
+<strong>Start simple → evolve.</strong> Begin with a monolith that works, then scale it with caching, sharding, async processing.
+</div>
+</div>
+
+<div class="card">
+<div class="ct"><span class="n n2">6</span> Deep Dive (15-20 min)</div>
+<div class="a">
+The interviewer will pick 1-2 areas to go deep. Be ready to discuss:<br>
+• <strong>Database choice & sharding strategy</strong> — Why DynamoDB over PostgreSQL? How do you shard?<br>
+• <strong>Caching layer</strong> — What's cached? Cache invalidation strategy?<br>
+• <strong>Failure handling</strong> — What if the queue goes down? How do you handle partial failures?<br>
+• <strong>Bottleneck analysis</strong> — Where will the system break first at 10x scale?
+</div>
+</div>
+
+<div class="card">
+<div class="ct"><span class="n n2">7</span> Wrap-Up (2-3 min)</div>
+<div class="a">
+Summarize trade-offs you made. Mention what you'd improve with more time: monitoring, alerting, A/B testing, gradual rollout, multi-region deployment.
+</div>
+</div>
+
+<div class="tip"><strong>💡 Pro Tip:</strong> Interviewers evaluate your <em>thought process</em>, not a perfect design. Communicate trade-offs explicitly: "I'm choosing Cassandra over PostgreSQL here because we need high write throughput and can tolerate eventual consistency for likes/views."</div>
+</div>
+
+<!-- ===== TAB 3: EASY ===== -->
+<div id="t3" class="tc">
+<span class="badge ba1">EASY</span>
+<h2>Easy System Design Problems</h2>
+<p style="color:var(--muted);margin-bottom:20px">Start here. These have narrow scope and well-defined inputs/outputs.</p>
+
+<!-- URL Shortener -->
+<div class="card">
+<div class="ct"><span class="n n1">1</span> Design a URL Shortener (TinyURL / Bitly)</div>
+<span class="tag t-amz">Amazon</span><span class="tag t-ggl">Google</span><span class="tag t-meta">Meta</span><span class="tag t-ms">Microsoft</span><span class="tag t-strp">Stripe</span><span class="tag t-uber">Uber</span><span class="diff d-e">Easy</span>
+<div class="a" style="margin-top:10px">
+<strong>The #1 most universal system design question.</strong> Asked at virtually every major company.<br><br>
+<strong>Requirements:</strong> Given a long URL, generate a unique short URL. Redirect short URL to original. Analytics tracking. URL expiration.<br><br>
+<strong>Key decisions:</strong><br>
+• <strong>ID Generation:</strong> Base62 encoding of auto-increment ID or MD5 hash (first 7 chars). Base62 gives 62⁷ = 3.5 trillion unique URLs.<br>
+• <strong>Storage:</strong> Key-value store (DynamoDB) or SQL. Short code → long URL mapping.<br>
+• <strong>Read-heavy:</strong> 100:1 read/write. Cache popular URLs in Redis. 301 (permanent) vs 302 (temporary) redirect — 301 for caching, 302 for analytics.<br>
+• <strong>Scale:</strong> Partition by hash of short code. Replicate reads across regions.
+</div>
+<div class="arch">
+<svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="a1" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#64ffda"/></marker></defs>
+  <rect x="10" y="70" width="80" height="50" rx="8" fill="#131b2e" stroke="#64ffda" stroke-width="1.5" class="node-anim"/>
+  <text x="50" y="100" text-anchor="middle" fill="#64ffda" font-size="11" font-family="Space Grotesk">Client</text>
+  <line x1="90" y1="95" x2="155" y2="95" stroke="#64ffda" stroke-width="1.5" marker-end="url(#a1)" class="flow-line"/>
+  <rect x="160" y="70" width="100" height="50" rx="8" fill="#131b2e" stroke="#7c4dff" stroke-width="1.5"/>
+  <text x="210" y="92" text-anchor="middle" fill="#7c4dff" font-size="10" font-family="Space Grotesk">Load Balancer</text>
+  <text x="210" y="106" text-anchor="middle" fill="#6b7d99" font-size="8" font-family="Space Grotesk">Nginx / ALB</text>
+  <line x1="260" y1="95" x2="325" y2="95" stroke="#64ffda" stroke-width="1.5" marker-end="url(#a1)" class="flow-line"/>
+  <rect x="330" y="70" width="100" height="50" rx="8" fill="#131b2e" stroke="#40c4ff" stroke-width="1.5"/>
+  <text x="380" y="92" text-anchor="middle" fill="#40c4ff" font-size="10" font-family="Space Grotesk">App Server</text>
+  <text x="380" y="106" text-anchor="middle" fill="#6b7d99" font-size="8" font-family="Space Grotesk">Base62 Encode</text>
+  <line x1="430" y1="80" x2="510" y2="50" stroke="#ffd740" stroke-width="1.2" marker-end="url(#a1)" class="flow-line"/>
+  <rect x="510" y="25" width="100" height="45" rx="8" fill="#131b2e" stroke="#ffd740" stroke-width="1.5"/>
+  <text x="560" y="45" text-anchor="middle" fill="#ffd740" font-size="10" font-family="Space Grotesk">Redis Cache</text>
+  <text x="560" y="59" text-anchor="middle" fill="#6b7d99" font-size="8" font-family="Space Grotesk">Hot URLs</text>
+  <line x1="430" y1="110" x2="510" y2="140" stroke="#ff6b9d" stroke-width="1.2" marker-end="url(#a1)" class="flow-line"/>
+  <rect x="510" y="120" width="100" height="45" rx="8" fill="#131b2e" stroke="#ff6b9d" stroke-width="1.5"/>
+  <text x="560" y="140" text-anchor="middle" fill="#ff6b9d" font-size="10" font-family="Space Grotesk">Database</text>
+  <text x="560" y="154" text-anchor="middle" fill="#6b7d99" font-size="8" font-family="Space Grotesk">DynamoDB</text>
+</svg>
+<div class="arch-label">URL Shortener — High-Level Architecture (animated data flow)</div>
+</div>
+</div>
+
+<!-- Rate Limiter -->
+<div class="card">
+<div class="ct"><span class="n n1">2</span> Design a Rate Limiter</div>
+<span class="tag t-ggl">Google</span><span class="tag t-amz">Amazon</span><span class="tag t-strp">Stripe</span><span class="tag t-lnkd">LinkedIn</span><span class="diff d-e">Easy</span>
+<div class="a" style="margin-top:10px">
+<strong>Requirements:</strong> Limit API requests per user/IP. Return HTTP 429 when exceeded. Configurable rules.<br><br>
+<strong>Algorithms:</strong><br>
+• <strong>Token Bucket</strong> — bucket holds N tokens, refilled at rate R. Each request consumes 1 token. Empty bucket → reject. (Most common)<br>
+• <strong>Sliding Window Log</strong> — Store timestamps of each request. Count requests in sliding window. More accurate but memory-intensive.<br>
+• <strong>Sliding Window Counter</strong> — Hybrid. Less memory than log, more accurate than fixed window.<br><br>
+<strong>Where to place:</strong> API Gateway (centralized), middleware, or client-side. Distributed rate limiting uses Redis with atomic INCR + TTL.<br>
+<strong>Key detail:</strong> In distributed systems, use Redis for shared counter state across multiple app servers.
+</div>
+</div>
+
+<!-- Pastebin -->
+<div class="card">
+<div class="ct"><span class="n n1">3</span> Design Pastebin</div>
+<span class="tag t-amz">Amazon</span><span class="tag t-ms">Microsoft</span><span class="diff d-e">Easy</span>
+<div class="a" style="margin-top:10px">
+<strong>Requirements:</strong> Users paste text → get a unique URL. Text accessible via URL. Expiration. Size limit (10MB).<br><br>
+<strong>Design:</strong> Very similar to URL Shortener + Blob Storage. Store text content in S3/blob store (not in DB). Metadata (paste ID, owner, expiry, size) in DB. Generate unique paste ID via Base62. Cache frequently accessed pastes in Redis. Add cleanup job for expired pastes.
+</div>
+</div>
+
+<!-- Key-Value Store -->
+<div class="card">
+<div class="ct"><span class="n n1">4</span> Design a Key-Value Store</div>
+<span class="tag t-apl">Apple</span><span class="tag t-ggl">Google</span><span class="tag t-amz">Amazon</span><span class="diff d-e">Easy</span>
+<div class="a" style="margin-top:10px">
+<strong>Requirements:</strong> put(key, value), get(key). High availability. Low latency. Scalable.<br><br>
+<strong>Design:</strong> Consistent hashing to distribute keys. Each node stores a partition. Replication factor of 3 for durability. Write to leader + 2 replicas. Read from nearest replica.<br>
+<strong>Conflict resolution:</strong> Vector clocks or last-write-wins. Gossip protocol for failure detection.<br>
+<strong>Real-world:</strong> DynamoDB, Riak, Redis Cluster.
+</div>
+</div>
+
+<!-- Unique ID Generator -->
+<div class="card">
+<div class="ct"><span class="n n1">5</span> Design a Unique ID Generator</div>
+<span class="tag t-amz">Amazon</span><span class="tag t-ms">Microsoft</span><span class="tag t-uber">Uber</span><span class="diff d-e">Easy</span>
+<div class="a" style="margin-top:10px">
+<strong>Requirements:</strong> Generate 64-bit unique, sortable IDs at high throughput. No single point of failure.<br><br>
+<strong>Approaches:</strong><br>
+• <strong>UUID</strong> — 128-bit, no coordination, but not sortable and large.<br>
+• <strong>Snowflake (Twitter)</strong> — 64-bit: [1 bit unused][41 bits timestamp][5 bits datacenter][5 bits machine][12 bits sequence]. 4096 IDs/ms per machine. Time-sortable. Industry standard.<br>
+• <strong>Database auto-increment</strong> — Simple but single point of failure. Use with range allocation (each server pre-allocates a range).<br><br>
+<strong>Most interviews want:</strong> Snowflake-style. Explain bit allocation and why it's time-sortable.
+</div>
+</div>
+</div>
+
+<!-- ===== TAB 4: MEDIUM ===== -->
+<div id="t4" class="tc">
+<span class="badge ba4">MEDIUM</span>
+<h2>Medium System Design Problems</h2>
+<p style="color:var(--muted);margin-bottom:20px">Multi-component systems. These test your ability to connect building blocks and reason about trade-offs.</p>
+
+<!-- Instagram -->
+<div class="card">
+<div class="ct"><span class="n n2">6</span> Design Instagram</div>
+<span class="tag t-meta">Meta</span><span class="tag t-amz">Amazon</span><span class="tag t-ggl">Google</span><span class="diff d-m">Medium</span>
+<div class="a" style="margin-top:10px">
+<strong>#1 most asked at Meta.</strong> Combines media storage, feed generation, and social graph.<br><br>
+<strong>Core features:</strong> Upload photos/videos, follow users, news feed, stories, likes/comments, explore page.<br><br>
+<strong>Key decisions:</strong><br>
+• <strong>Media storage:</strong> S3 for originals. Generate multiple resolutions. Serve via CDN.<br>
+• <strong>News Feed:</strong> Fan-out-on-write (precompute feed for each follower at write time) for normal users. Fan-out-on-read (compute at read time) for celebrity users (millions of followers). Hybrid approach.<br>
+• <strong>Database:</strong> User/post metadata in SQL. Follower graph in graph DB or adjacency list. Activity in NoSQL (Cassandra).<br>
+• <strong>Feed ranking:</strong> ML-based ranking model considering recency, engagement, relationship strength.
+</div>
+<div class="arch">
+<svg viewBox="0 0 700 280" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="a2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#64ffda"/></marker></defs>
+  <!-- Upload flow -->
+  <text x="20" y="18" fill="#ffd740" font-size="10" font-weight="600" font-family="Space Grotesk">UPLOAD FLOW</text>
+  <rect x="10" y="30" width="70" height="40" rx="6" fill="#131b2e" stroke="#64ffda" stroke-width="1.2" class="node-anim"/>
+  <text x="45" y="55" text-anchor="middle" fill="#64ffda" font-size="9" font-family="Space Grotesk">Mobile</text>
+  <line x1="80" y1="50" x2="130" y2="50" stroke="#64ffda" stroke-width="1.2" marker-end="url(#a2)" class="flow-line"/>
+  <rect x="135" y="30" width="85" height="40" rx="6" fill="#131b2e" stroke="#7c4dff" stroke-width="1.2"/>
+  <text x="177" y="48" text-anchor="middle" fill="#7c4dff" font-size="9" font-family="Space Grotesk">API Gateway</text>
+  <text x="177" y="60" text-anchor="middle" fill="#6b7d99" font-size="7" font-family="Space Grotesk">Auth + Rate Limit</text>
+  <line x1="220" y1="50" x2="270" y2="50" stroke="#64ffda" stroke-width="1.2" marker-end="url(#a2)" class="flow-line"/>
+  <rect x="275" y="30" width="80" height="40" rx="6" fill="#131b2e" stroke="#40c4ff" stroke-width="1.2"/>
+  <text x="315" y="48" text-anchor="middle" fill="#40c4ff" font-size="9" font-family="Space Grotesk">Post Service</text>
+  <text x="315" y="60" text-anchor="middle" fill="#6b7d99" font-size="7" font-family="Space Grotesk">Validate + Save</text>
+  <line x1="355" y1="50" x2="420" y2="30" stroke="#ffd740" stroke-width="1.2" marker-end="url(#a2)" class="flow-line"/>
+  <rect x="420" y="10" width="80" height="35" rx="6" fill="#131b2e" stroke="#ffd740" stroke-width="1.2"/>
+  <text x="460" y="32" text-anchor="middle" fill="#ffd740" font-size="9" font-family="Space Grotesk">S3 + CDN</text>
+  <line x1="355" y1="60" x2="420" y2="70" stroke="#ff6b9d" stroke-width="1.2" marker-end="url(#a2)" class="flow-line"/>
+  <rect x="420" y="55" width="80" height="35" rx="6" fill="#131b2e" stroke="#ff6b9d" stroke-width="1.2"/>
+  <text x="460" y="77" text-anchor="middle" fill="#ff6b9d" font-size="9" font-family="Space Grotesk">Metadata DB</text>
+  <!-- Feed flow -->
+  <text x="20" y="120" fill="#40c4ff" font-size="10" font-weight="600" font-family="Space Grotesk">NEWS FEED FLOW</text>
+  <rect x="275" y="130" width="80" height="40" rx="6" fill="#131b2e" stroke="#40c4ff" stroke-width="1.2"/>
+  <text x="315" y="148" text-anchor="middle" fill="#40c4ff" font-size="9" font-family="Space Grotesk">Fan-Out Svc</text>
+  <text x="315" y="160" text-anchor="middle" fill="#6b7d99" font-size="7" font-family="Space Grotesk">Push to feeds</text>
+  <line x1="355" y1="140" x2="420" y2="140" stroke="#64ffda" stroke-width="1.2" marker-end="url(#a2)" class="flow-line"/>
+  <rect x="420" y="125" width="90" height="35" rx="6" fill="#131b2e" stroke="#64ffda" stroke-width="1.2"/>
+  <text x="465" y="147" text-anchor="middle" fill="#64ffda" font-size="9" font-family="Space Grotesk">Feed Cache</text>
+  <line x1="510" y1="142" x2="570" y2="142" stroke="#64ffda" stroke-width="1.2" marker-end="url(#a2)" class="flow-line"/>
+  <rect x="575" y="125" width="80" height="35" rx="6" fill="#131b2e" stroke="#7c4dff" stroke-width="1.2"/>
+  <text x="615" y="147" text-anchor="middle" fill="#7c4dff" font-size="9" font-family="Space Grotesk">Feed API</text>
+  <line x1="275" y1="150" x2="220" y2="160" stroke="#ffd740" stroke-width="1.2" marker-end="url(#a2)" class="flow-line"/>
+  <rect x="120" y="145" width="100" height="35" rx="6" fill="#131b2e" stroke="#ffd740" stroke-width="1.2"/>
+  <text x="170" y="167" text-anchor="middle" fill="#ffd740" font-size="9" font-family="Space Grotesk">Kafka (Events)</text>
+  <!-- Legend -->
+  <text x="20" y="215" fill="#6b7d99" font-size="8" font-family="Space Grotesk">Fan-out-on-write for normal users | Fan-out-on-read for celebrities (>1M followers)</text>
+</svg>
+<div class="arch-label">Instagram — Upload & News Feed Architecture</div>
+</div>
+</div>
+
+<!-- Chat System -->
+<div class="card">
+<div class="ct"><span class="n n2">7</span> Design WhatsApp / Chat System</div>
+<span class="tag t-meta">Meta</span><span class="tag t-amz">Amazon</span><span class="tag t-ms">Microsoft</span><span class="tag t-uber">Uber</span><span class="diff d-m">Medium</span>
+<div class="a" style="margin-top:10px">
+<strong>Requirements:</strong> 1-to-1 messaging, group chat, online status, read receipts, media sharing. Real-time delivery.<br><br>
+<strong>Key decisions:</strong><br>
+• <strong>Protocol:</strong> WebSocket for real-time bidirectional communication. HTTP for initial connection, then upgrade to WS.<br>
+• <strong>Message flow:</strong> Sender → WS Server → Message Queue → Recipient's WS Server → Recipient. If recipient offline → store in DB, deliver on reconnect.<br>
+• <strong>Storage:</strong> Messages in Cassandra (wide-column, partition by chat_id, cluster by timestamp). User metadata in SQL.<br>
+• <strong>Group chat:</strong> Fan-out to all group members via message queue. Keep group size limited (256/1024).<br>
+• <strong>Read receipts:</strong> Track per-message status (sent, delivered, read) with timestamps.<br>
+• <strong>E2E Encryption:</strong> Signal protocol. Keys exchanged via server but server can't read messages.
+</div>
+</div>
+
+<!-- Twitter -->
+<div class="card">
+<div class="ct"><span class="n n2">8</span> Design Twitter / X Timeline</div>
+<span class="tag t-ggl">Google</span><span class="tag t-meta">Meta</span><span class="tag t-amz">Amazon</span><span class="tag t-twtr">Twitter</span><span class="diff d-m">Medium</span>
+<div class="a" style="margin-top:10px">
+<strong>Requirements:</strong> Post tweets, follow users, home timeline, trending topics, search.<br><br>
+<strong>Key challenge:</strong> Timeline generation at scale. Twitter has 500M+ tweets/day.<br>
+• <strong>Fan-out-on-write:</strong> When user tweets, push to all followers' timeline caches. Fast reads but expensive writes for celebrities (fan-out to millions).<br>
+• <strong>Hybrid:</strong> Fan-out-on-write for users with <10K followers. Fan-out-on-read for celebrities. Merge at read time.<br>
+• <strong>Trending:</strong> Streaming aggregation (Apache Storm/Flink) counting hashtag frequency in sliding time windows.<br>
+• <strong>Search:</strong> Elasticsearch with inverted index on tweet text + hashtags.
+</div>
+</div>
+
+<!-- Notification System -->
+<div class="card">
+<div class="ct"><span class="n n2">9</span> Design a Notification System</div>
+<span class="tag t-amz">Amazon</span><span class="tag t-meta">Meta</span><span class="tag t-apl">Apple</span><span class="tag t-ms">Microsoft</span><span class="diff d-m">Medium</span>
+<div class="a" style="margin-top:10px">
+<strong>Requirements:</strong> Push notifications (iOS/Android), SMS, email. Priority levels. Rate limiting. Preference management.<br><br>
+<strong>Architecture:</strong> Event producers → Kafka → Notification Service → channel-specific senders (APNS, FCM, Twilio, SendGrid).<br>
+<strong>Key details:</strong> Deduplification (don't send duplicates), retry with exponential backoff, user preference store (opt-in/out per channel), template engine for content, analytics tracking (delivered, opened, clicked).
+</div>
+</div>
+
+<!-- Web Crawler -->
+<div class="card">
+<div class="ct"><span class="n n2">10</span> Design a Web Crawler</div>
+<span class="tag t-ggl">Google</span><span class="tag t-amz">Amazon</span><span class="tag t-ms">Microsoft</span><span class="diff d-m">Medium</span>
+<div class="a" style="margin-top:10px">
+<strong>Requirements:</strong> Crawl billions of web pages. Respect robots.txt. Avoid duplicate content. Politeness (rate limit per domain).<br><br>
+<strong>Architecture:</strong> Seed URLs → URL Frontier (priority queue) → DNS Resolver → Fetcher (multi-threaded) → Content Parser → URL Extractor → Dedup (Bloom Filter) → Content Store.<br>
+<strong>Key details:</strong> BFS for broad coverage, DFS for deep site crawling. Use consistent hashing to assign domains to specific crawler nodes. Bloom filter for URL deduplication (O(1) lookup, false positives acceptable). Store page content in blob storage, metadata in DB.
+</div>
+</div>
+
+<!-- Typeahead -->
+<div class="card">
+<div class="ct"><span class="n n2">11</span> Design Typeahead / Autocomplete</div>
+<span class="tag t-ggl">Google</span><span class="tag t-amz">Amazon</span><span class="tag t-lnkd">LinkedIn</span><span class="tag t-spot">Spotify</span><span class="diff d-m">Medium</span>
+<div class="a" style="margin-top:10px">
+<strong>Requirements:</strong> As user types, show top 5-10 suggestions in real-time (<100ms). Rank by popularity, personalization, recency.<br><br>
+<strong>Data structure:</strong> Trie (prefix tree) stored in memory. Each node stores top-K suggestions for that prefix. When user types "sys" → traverse to node "s→y→s" → return pre-computed top 5 results.<br>
+<strong>Updates:</strong> Don't update trie on every query. Batch: collect query logs → MapReduce aggregation hourly/daily → rebuild trie → deploy to servers. Use Zookeeper for coordination.<br>
+<strong>Architecture:</strong> Client sends prefix → Load Balancer → Typeahead Service (in-memory trie) → return cached top-K. Multi-layer caching: browser cache (for repeated prefixes), CDN, application-level Redis cache.<br>
+<strong>Scale:</strong> Shard trie by first 2 characters. "aa-az" on shard 1, "ba-bz" on shard 2. Each shard fits in memory (~GB range for billions of queries).<br>
+<strong>Personalization:</strong> Combine global popularity score with user's recent search history. Weighted merge at read time.
+</div>
+</div>
+
+<!-- E-Commerce -->
+<div class="card">
+<div class="ct"><span class="n n2">12</span> Design E-Commerce Checkout (Amazon Cart)</div>
+<span class="tag t-amz">Amazon</span><span class="tag t-strp">Stripe</span><span class="tag t-ms">Microsoft</span><span class="diff d-m">Medium</span>
+<div class="a" style="margin-top:10px">
+<strong>Requirements:</strong> Add to cart, inventory reservation, checkout, payment processing, order confirmation. Handle concurrent buyers for limited stock.<br><br>
+<strong>Key challenges:</strong><br>
+• <strong>Inventory race condition:</strong> Two users add last item simultaneously. Solution: optimistic locking with version check OR Redis DECR for atomic stock reduction. Reserve for 15 min during checkout, release if abandoned.<br>
+• <strong>Cart service:</strong> Ephemeral (Redis for logged-in, cookies for guests). Persist cart to DB on checkout initiation.<br>
+• <strong>Order flow:</strong> Cart → create order (status: PENDING) → call Payment Service → on success: update order (CONFIRMED), reduce inventory, send confirmation email via notification queue → on failure: release reservation, update order (FAILED).<br>
+• <strong>Idempotency:</strong> Payment requests must include idempotency key. Retries don't double-charge. Store payment result keyed by idempotency_key in Redis with 24h TTL.<br>
+• <strong>Database:</strong> Orders in PostgreSQL (ACID for financial data). Product catalog in MongoDB (flexible schema). Cart in Redis (fast, ephemeral).
+</div>
+</div>
+</div>
+
+<!-- ===== TAB 5: HARD ===== -->
+<div id="t5" class="tc">
+<span class="badge ba3">HARD</span>
+<h2>Hard System Design Problems</h2>
+<p style="color:var(--muted);margin-bottom:20px">Multi-service systems with complex real-time, consistency, or scale challenges. Senior/Staff level.</p>
+
+<!-- YouTube -->
+<div class="card">
+<div class="ct"><span class="n n3">11</span> Design YouTube / Video Streaming</div>
+<span class="tag t-ggl">Google</span><span class="tag t-amz">Amazon</span><span class="tag t-nflx">Netflix</span><span class="tag t-meta">Meta</span><span class="diff d-h">Hard</span>
+<div class="a" style="margin-top:10px">
+<strong>Requirements:</strong> Upload videos, transcode to multiple resolutions, stream to millions, search, recommendations.<br><br>
+<strong>Upload pipeline:</strong> Client → pre-signed S3 URL (direct upload) → S3 trigger → Transcoding Queue (SQS) → Transcoder (FFmpeg workers) → generates 144p to 4K → store in S3 → update metadata DB → push to CDN.<br>
+<strong>Streaming:</strong> Adaptive Bitrate Streaming (HLS/DASH). Client requests manifest file → plays segments, switching quality based on bandwidth.<br>
+<strong>Scale:</strong> CDN for popular videos (80% of views are top 20% content). Origin server for long-tail. Preload popular videos to edge locations.<br>
+<strong>Search:</strong> Elasticsearch on title, description, tags, auto-generated captions.<br>
+<strong>Recommendations:</strong> Collaborative filtering + content-based. Served from a pre-computed recommendation cache.
+</div>
+<div class="arch">
+<svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="a3" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#64ffda"/></marker></defs>
+  <text x="10" y="15" fill="#ff6b9d" font-size="10" font-weight="600" font-family="Space Grotesk">VIDEO UPLOAD & TRANSCODE PIPELINE</text>
+  <rect x="10" y="28" width="65" height="36" rx="6" fill="#131b2e" stroke="#64ffda" stroke-width="1.2" class="node-anim"/>
+  <text x="42" y="50" text-anchor="middle" fill="#64ffda" font-size="8" font-family="Space Grotesk">Upload</text>
+  <line x1="75" y1="46" x2="110" y2="46" stroke="#64ffda" stroke-width="1.2" marker-end="url(#a3)" class="flow-line"/>
+  <rect x="115" y="28" width="65" height="36" rx="6" fill="#131b2e" stroke="#ffd740" stroke-width="1.2"/>
+  <text x="147" y="50" text-anchor="middle" fill="#ffd740" font-size="8" font-family="Space Grotesk">S3 Raw</text>
+  <line x1="180" y1="46" x2="215" y2="46" stroke="#ffd740" stroke-width="1.2" marker-end="url(#a3)" class="flow-line"/>
+  <rect x="220" y="28" width="65" height="36" rx="6" fill="#131b2e" stroke="#7c4dff" stroke-width="1.2"/>
+  <text x="252" y="50" text-anchor="middle" fill="#7c4dff" font-size="8" font-family="Space Grotesk">Queue</text>
+  <line x1="285" y1="46" x2="320" y2="46" stroke="#7c4dff" stroke-width="1.2" marker-end="url(#a3)" class="flow-line"/>
+  <rect x="325" y="28" width="80" height="36" rx="6" fill="#131b2e" stroke="#ff6b9d" stroke-width="1.2"/>
+  <text x="365" y="44" text-anchor="middle" fill="#ff6b9d" font-size="8" font-family="Space Grotesk">Transcoder</text>
+  <text x="365" y="56" text-anchor="middle" fill="#6b7d99" font-size="7" font-family="Space Grotesk">FFmpeg Workers</text>
+  <line x1="405" y1="46" x2="440" y2="46" stroke="#ff6b9d" stroke-width="1.2" marker-end="url(#a3)" class="flow-line"/>
+  <rect x="445" y="28" width="75" height="36" rx="6" fill="#131b2e" stroke="#40c4ff" stroke-width="1.2"/>
+  <text x="482" y="44" text-anchor="middle" fill="#40c4ff" font-size="8" font-family="Space Grotesk">S3 Multi-Res</text>
+  <text x="482" y="56" text-anchor="middle" fill="#6b7d99" font-size="7" font-family="Space Grotesk">144p → 4K</text>
+  <line x1="520" y1="46" x2="560" y2="46" stroke="#40c4ff" stroke-width="1.2" marker-end="url(#a3)" class="flow-line"/>
+  <rect x="565" y="28" width="65" height="36" rx="6" fill="#131b2e" stroke="#64ffda" stroke-width="1.2"/>
+  <text x="597" y="50" text-anchor="middle" fill="#64ffda" font-size="8" font-family="Space Grotesk">CDN</text>
+  <!-- Streaming flow -->
+  <text x="10" y="100" fill="#40c4ff" font-size="10" font-weight="600" font-family="Space Grotesk">STREAMING (HLS/DASH)</text>
+  <rect x="10" y="112" width="65" height="36" rx="6" fill="#131b2e" stroke="#64ffda" stroke-width="1.2" class="node-anim"/>
+  <text x="42" y="134" text-anchor="middle" fill="#64ffda" font-size="8" font-family="Space Grotesk">Viewer</text>
+  <line x1="75" y1="130" x2="130" y2="130" stroke="#64ffda" stroke-width="1.2" marker-end="url(#a3)" class="flow-line"/>
+  <rect x="135" y="112" width="95" height="36" rx="6" fill="#131b2e" stroke="#ffd740" stroke-width="1.2"/>
+  <text x="182" y="128" text-anchor="middle" fill="#ffd740" font-size="8" font-family="Space Grotesk">CDN Edge</text>
+  <text x="182" y="140" text-anchor="middle" fill="#6b7d99" font-size="7" font-family="Space Grotesk">CloudFront/Akamai</text>
+  <line x1="230" y1="130" x2="290" y2="130" stroke="#ffd740" stroke-width="1.2" marker-end="url(#a3)" class="flow-line"/>
+  <rect x="295" y="112" width="95" height="36" rx="6" fill="#131b2e" stroke="#7c4dff" stroke-width="1.2"/>
+  <text x="342" y="128" text-anchor="middle" fill="#7c4dff" font-size="8" font-family="Space Grotesk">ABR Manifest</text>
+  <text x="342" y="140" text-anchor="middle" fill="#6b7d99" font-size="7" font-family="Space Grotesk">.m3u8 / .mpd</text>
+  <text x="10" y="175" fill="#6b7d99" font-size="8" font-family="Space Grotesk">Client auto-switches quality segments based on available bandwidth (Adaptive Bitrate)</text>
+</svg>
+<div class="arch-label">YouTube — Upload Pipeline & Streaming Architecture</div>
+</div>
+</div>
+
+<!-- Uber -->
+<div class="card">
+<div class="ct"><span class="n n3">12</span> Design Uber / Ride-Sharing</div>
+<span class="tag t-uber">Uber</span><span class="tag t-meta">Meta</span><span class="tag t-amz">Amazon</span><span class="tag t-ggl">Google</span><span class="diff d-h">Hard</span>
+<div class="a" style="margin-top:10px">
+<strong>Requirements:</strong> Request ride, match driver, real-time tracking, ETA, payments, surge pricing.<br><br>
+<strong>Key components:</strong><br>
+• <strong>Location Service:</strong> Drivers send GPS every 3-5 sec via WebSocket. Store in Redis with geohash. Geospatial query: "find drivers within 5km radius."<br>
+• <strong>Matching:</strong> Rider requests ride → find nearest available drivers (geohash lookup) → sort by ETA → send request to closest. If declined, try next.<br>
+• <strong>ETA:</strong> Dijkstra/A* on road graph + real-time traffic data. Pre-computed contraction hierarchies for speed.<br>
+• <strong>Real-time tracking:</strong> Driver location updates → server → pushed to rider via WebSocket.<br>
+• <strong>Surge pricing:</strong> Supply/demand ratio per geohash region. Dynamic multiplier.<br>
+• <strong>Scale:</strong> Partition by city/region. Each region has its own location service cluster.
+</div>
+</div>
+
+<!-- Google Docs -->
+<div class="card">
+<div class="ct"><span class="n n3">13</span> Design Google Docs / Collaborative Editing</div>
+<span class="tag t-ggl">Google</span><span class="tag t-meta">Meta</span><span class="diff d-h">Hard</span>
+<div class="a" style="margin-top:10px">
+<strong>Requirements:</strong> Multiple users edit same document simultaneously. Real-time sync. Conflict resolution. Cursor positions. Version history.<br><br>
+<strong>Key challenge: Conflict resolution.</strong> Two approaches:<br>
+• <strong>OT (Operational Transformation)</strong> — Used by Google Docs. Transform conflicting operations so both can be applied. Complex but battle-tested.<br>
+• <strong>CRDT (Conflict-free Replicated Data Types)</strong> — Used by Figma. Data structure that's mathematically guaranteed to converge. Simpler logic but higher storage.<br><br>
+<strong>Architecture:</strong> Client sends operations (insert char at position X) → Server applies OT → broadcasts transformed ops to all other clients. WebSocket for real-time. Document stored as operation log + periodic snapshots.
+</div>
+</div>
+
+<!-- Google Maps -->
+<div class="card">
+<div class="ct"><span class="n n3">14</span> Design Google Maps</div>
+<span class="tag t-ggl">Google</span><span class="tag t-uber">Uber</span><span class="diff d-h">Hard</span>
+<div class="a" style="margin-top:10px">
+<strong>Requirements:</strong> Map rendering, turn-by-turn navigation, ETA, real-time traffic, search places.<br><br>
+<strong>Map tiles:</strong> Pre-rendered at multiple zoom levels (0-21). Stored in blob storage. Served via CDN. Client requests tiles based on viewport.<br>
+<strong>Routing:</strong> Road network as weighted graph (billions of edges). A* algorithm with contraction hierarchies for fast queries. Pre-compute popular routes.<br>
+<strong>Traffic:</strong> Aggregate GPS data from millions of phones. Segment-level speed computation. Update routing weights in real-time.<br>
+<strong>Search:</strong> Geocoding (text → lat/long), reverse geocoding (lat/long → address). Elasticsearch with geospatial filters.
+</div>
+</div>
+
+<!-- Distributed Cache -->
+<div class="card">
+<div class="ct"><span class="n n3">15</span> Design a Distributed Cache (Memcached/Redis)</div>
+<span class="tag t-amz">Amazon</span><span class="tag t-ggl">Google</span><span class="tag t-ms">Microsoft</span><span class="diff d-h">Hard</span>
+<div class="a" style="margin-top:10px">
+<strong>Requirements:</strong> In-memory key-value store. Sub-millisecond reads. Horizontal scaling. High availability.<br><br>
+<strong>Architecture:</strong> Consistent hashing to distribute keys across cache nodes. Virtual nodes for uniform distribution. Replication for HA (async replication to follower).<br>
+<strong>Eviction:</strong> LRU (doubly linked list + hashmap). LFU for frequency-based.<br>
+<strong>Cache stampede prevention:</strong> Lock-based (only one thread fetches from DB, others wait), probabilistic early expiration, stale-while-revalidate.<br>
+<strong>Write policies:</strong> Write-through (write to cache + DB simultaneously), Write-behind (write to cache, async batch write to DB).
+</div>
+</div>
+
+<!-- Payment System -->
+<div class="card">
+<div class="ct"><span class="n n3">16</span> Design a Payment Processing System (Stripe)</div>
+<span class="tag t-strp">Stripe</span><span class="tag t-amz">Amazon</span><span class="tag t-ggl">Google</span><span class="tag t-uber">Uber</span><span class="diff d-h">Hard</span>
+<div class="a" style="margin-top:10px">
+<strong>Requirements:</strong> Process credit/debit card payments for merchants. Support pay-in (customer → merchant) and pay-out (merchant → bank). Handle refunds. 99.99% uptime. ~1M transactions/day.<br><br>
+<strong>Key principles (never violate these):</strong><br>
+• <strong>Never use floating-point for money.</strong> Store as integers in smallest unit (cents/paisa). $12.50 = 1250.<br>
+• <strong>Idempotency is mandatory.</strong> Every API call includes an idempotency_key. If client retries due to timeout, return the same result — never double-charge.<br>
+• <strong>Payments are state machines, not records.</strong> States: CREATED → PROCESSING → AUTHORIZED → CAPTURED → SETTLED (or FAILED/REFUNDED). Enforce valid transitions only.<br><br>
+<strong>Architecture:</strong><br>
+Merchant API call → API Gateway (auth, rate limit) → Payment Service → validates merchant + amount → sends to Payment Processor (Visa/Mastercard via acquirer bank) → on approval: write to Ledger DB (double-entry bookkeeping) → emit event to Kafka → Notification Service sends webhook to merchant → Settlement Service runs nightly batch to transfer funds.<br><br>
+<strong>Critical design details:</strong><br>
+• <strong>Double-entry ledger:</strong> Every transaction = two entries (debit one account, credit another). Sum of all entries = 0. This is how Stripe and all financial systems ensure correctness.<br>
+• <strong>Reconciliation:</strong> Nightly job compares internal ledger with external bank statements. Flags discrepancies. Defense-in-depth against bugs and bank errors.<br>
+• <strong>Outbox pattern:</strong> Write payment record + event message in same DB transaction. Separate process reads outbox and publishes to Kafka. Guarantees at-least-once event delivery.<br>
+• <strong>PCI Compliance:</strong> Never store raw card numbers. Use tokenization — replace card with a token at entry point. Only PCI-certified systems touch raw card data.
+</div>
+<div class="arch">
+<svg viewBox="0 0 740 220" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="a4" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#64ffda"/></marker></defs>
+  <text x="10" y="15" fill="#635bff" font-size="10" font-weight="600" font-family="Space Grotesk">PAYMENT PROCESSING PIPELINE</text>
+  <rect x="10" y="28" width="70" height="38" rx="6" fill="#131b2e" stroke="#64ffda" stroke-width="1.2" class="node-anim"/>
+  <text x="45" y="42" text-anchor="middle" fill="#64ffda" font-size="8" font-family="Space Grotesk">Merchant</text>
+  <text x="45" y="54" text-anchor="middle" fill="#6b7d99" font-size="7" font-family="Space Grotesk">API Call</text>
+  <line x1="80" y1="47" x2="115" y2="47" stroke="#64ffda" stroke-width="1.2" marker-end="url(#a4)" class="flow-line"/>
+  <rect x="120" y="28" width="75" height="38" rx="6" fill="#131b2e" stroke="#7c4dff" stroke-width="1.2"/>
+  <text x="157" y="42" text-anchor="middle" fill="#7c4dff" font-size="8" font-family="Space Grotesk">API Gateway</text>
+  <text x="157" y="54" text-anchor="middle" fill="#6b7d99" font-size="7" font-family="Space Grotesk">Auth+Idempotency</text>
+  <line x1="195" y1="47" x2="230" y2="47" stroke="#7c4dff" stroke-width="1.2" marker-end="url(#a4)" class="flow-line"/>
+  <rect x="235" y="28" width="75" height="38" rx="6" fill="#131b2e" stroke="#40c4ff" stroke-width="1.2"/>
+  <text x="272" y="42" text-anchor="middle" fill="#40c4ff" font-size="8" font-family="Space Grotesk">Payment Svc</text>
+  <text x="272" y="54" text-anchor="middle" fill="#6b7d99" font-size="7" font-family="Space Grotesk">State Machine</text>
+  <line x1="310" y1="47" x2="350" y2="47" stroke="#40c4ff" stroke-width="1.2" marker-end="url(#a4)" class="flow-line"/>
+  <rect x="355" y="28" width="90" height="38" rx="6" fill="#131b2e" stroke="#ff6b9d" stroke-width="1.2"/>
+  <text x="400" y="42" text-anchor="middle" fill="#ff6b9d" font-size="8" font-family="Space Grotesk">Card Network</text>
+  <text x="400" y="54" text-anchor="middle" fill="#6b7d99" font-size="7" font-family="Space Grotesk">Visa / Mastercard</text>
+  <line x1="445" y1="47" x2="480" y2="47" stroke="#ff6b9d" stroke-width="1.2" marker-end="url(#a4)" class="flow-line"/>
+  <rect x="485" y="28" width="80" height="38" rx="6" fill="#131b2e" stroke="#ffd740" stroke-width="1.2"/>
+  <text x="525" y="42" text-anchor="middle" fill="#ffd740" font-size="8" font-family="Space Grotesk">Ledger DB</text>
+  <text x="525" y="54" text-anchor="middle" fill="#6b7d99" font-size="7" font-family="Space Grotesk">Double-Entry</text>
+  <line x1="525" y1="66" x2="525" y2="100" stroke="#ffd740" stroke-width="1.2" marker-end="url(#a4)" class="flow-line"/>
+  <rect x="485" y="105" width="80" height="38" rx="6" fill="#131b2e" stroke="#64ffda" stroke-width="1.2"/>
+  <text x="525" y="119" text-anchor="middle" fill="#64ffda" font-size="8" font-family="Space Grotesk">Kafka</text>
+  <text x="525" y="131" text-anchor="middle" fill="#6b7d99" font-size="7" font-family="Space Grotesk">Event Bus</text>
+  <line x1="485" y1="124" x2="420" y2="124" stroke="#64ffda" stroke-width="1.2" marker-end="url(#a4)" class="flow-line"/>
+  <rect x="320" y="105" width="95" height="38" rx="6" fill="#131b2e" stroke="#7c4dff" stroke-width="1.2"/>
+  <text x="367" y="119" text-anchor="middle" fill="#7c4dff" font-size="8" font-family="Space Grotesk">Webhook Svc</text>
+  <text x="367" y="131" text-anchor="middle" fill="#6b7d99" font-size="7" font-family="Space Grotesk">Notify Merchant</text>
+  <line x1="565" y1="124" x2="610" y2="124" stroke="#64ffda" stroke-width="1.2" marker-end="url(#a4)" class="flow-line"/>
+  <rect x="615" y="105" width="80" height="38" rx="6" fill="#131b2e" stroke="#ff6b9d" stroke-width="1.2"/>
+  <text x="655" y="119" text-anchor="middle" fill="#ff6b9d" font-size="8" font-family="Space Grotesk">Settlement</text>
+  <text x="655" y="131" text-anchor="middle" fill="#6b7d99" font-size="7" font-family="Space Grotesk">Nightly Batch</text>
+  <!-- State machine -->
+  <text x="10" y="100" fill="#ffd740" font-size="9" font-weight="600" font-family="Space Grotesk">PAYMENT STATE MACHINE</text>
+  <rect x="10" y="110" width="55" height="24" rx="4" fill="#192340" stroke="#6b7d99" stroke-width="1"/>
+  <text x="37" y="126" text-anchor="middle" fill="#6b7d99" font-size="7" font-family="Space Grotesk">CREATED</text>
+  <text x="72" y="126" fill="#64ffda" font-size="10">→</text>
+  <rect x="82" y="110" width="65" height="24" rx="4" fill="#192340" stroke="#ffd740" stroke-width="1"/>
+  <text x="114" y="126" text-anchor="middle" fill="#ffd740" font-size="7" font-family="Space Grotesk">AUTHORIZED</text>
+  <text x="154" y="126" fill="#64ffda" font-size="10">→</text>
+  <rect x="164" y="110" width="60" height="24" rx="4" fill="#192340" stroke="#40c4ff" stroke-width="1"/>
+  <text x="194" y="126" text-anchor="middle" fill="#40c4ff" font-size="7" font-family="Space Grotesk">CAPTURED</text>
+  <text x="230" y="126" fill="#64ffda" font-size="10">→</text>
+  <rect x="240" y="110" width="55" height="24" rx="4" fill="#192340" stroke="#64ffda" stroke-width="1.2"/>
+  <text x="267" y="126" text-anchor="middle" fill="#64ffda" font-size="7" font-family="Space Grotesk">SETTLED</text>
+  <text x="10" y="155" fill="#6b7d99" font-size="7.5" font-family="Space Grotesk">Never store raw card numbers • Integer-only for money • Idempotency key on every request • Double-entry ledger</text>
+</svg>
+<div class="arch-label">Payment Processing System — Pipeline + State Machine</div>
+</div>
+</div>
+
+<!-- Netflix -->
+<div class="card">
+<div class="ct"><span class="n n3">17</span> Design Netflix</div>
+<span class="tag t-nflx">Netflix</span><span class="tag t-amz">Amazon</span><span class="tag t-ggl">Google</span><span class="diff d-h">Hard</span>
+<div class="a" style="margin-top:10px">
+<strong>Requirements:</strong> Stream video to 200M+ users globally. Personalized recommendations. Multi-device support. Offline downloads. Continue watching across devices.<br><br>
+<strong>Content Ingestion Pipeline:</strong><br>
+Studio uploads master file → Transcoding farm (thousands of workers) → generates 2000+ versions per title (resolution × codec × bitrate × audio language) → store in S3 → replicate to Open Connect Appliances (Netflix's own CDN boxes placed inside ISPs).<br><br>
+<strong>Streaming Architecture:</strong><br>
+• Client requests manifest → Steering Service selects best Open Connect server (closest, least loaded) → client streams segments via HLS/DASH.<br>
+• <strong>Adaptive Bitrate:</strong> Client continuously measures bandwidth → switches between quality levels within segments. Buffer management: keep 30-60 sec ahead.<br><br>
+<strong>Recommendation Engine:</strong><br>
+Two-stage approach: (1) Candidate generation — collaborative filtering + content-based filtering produces ~1000 candidates per user. (2) Ranking model — ML model scores each candidate based on user history, time of day, device, region → return top 50-75 for each row in UI.<br>
+Pre-computed offline (Spark jobs), cached per user. Updated daily. Real-time signals (just watched X) adjust rankings via lightweight online model.<br><br>
+<strong>Key Netflix-specific detail:</strong> Open Connect CDN. Netflix places hardware appliances (OCAs) inside ISP networks. During off-peak hours, new content is pushed to OCAs. During peak, 95% of traffic is served from within the ISP network → near-zero latency, no internet backbone needed.
+</div>
+<div class="arch">
+<svg viewBox="0 0 720 170" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="a5" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#e50914"/></marker></defs>
+  <text x="10" y="15" fill="#e50914" font-size="10" font-weight="600" font-family="Space Grotesk">NETFLIX STREAMING ARCHITECTURE</text>
+  <rect x="10" y="28" width="75" height="36" rx="6" fill="#131b2e" stroke="#e50914" stroke-width="1.5" class="node-anim"/>
+  <text x="47" y="50" text-anchor="middle" fill="#e50914" font-size="8" font-family="Space Grotesk">Smart TV</text>
+  <line x1="85" y1="46" x2="130" y2="46" stroke="#e50914" stroke-width="1.2" marker-end="url(#a5)" class="flow-line"/>
+  <rect x="135" y="28" width="95" height="36" rx="6" fill="#131b2e" stroke="#ffd740" stroke-width="1.2"/>
+  <text x="182" y="44" text-anchor="middle" fill="#ffd740" font-size="8" font-family="Space Grotesk">Steering Svc</text>
+  <text x="182" y="56" text-anchor="middle" fill="#6b7d99" font-size="7" font-family="Space Grotesk">Pick best CDN node</text>
+  <line x1="230" y1="46" x2="280" y2="46" stroke="#ffd740" stroke-width="1.2" marker-end="url(#a5)" class="flow-line"/>
+  <rect x="285" y="28" width="105" height="36" rx="6" fill="#131b2e" stroke="#64ffda" stroke-width="1.5"/>
+  <text x="337" y="44" text-anchor="middle" fill="#64ffda" font-size="8" font-family="Space Grotesk">Open Connect</text>
+  <text x="337" y="56" text-anchor="middle" fill="#6b7d99" font-size="7" font-family="Space Grotesk">ISP-local CDN box</text>
+  <line x1="390" y1="46" x2="430" y2="46" stroke="#64ffda" stroke-width="1.2" marker-end="url(#a5)" class="flow-line"/>
+  <rect x="435" y="28" width="75" height="36" rx="6" fill="#131b2e" stroke="#40c4ff" stroke-width="1.2"/>
+  <text x="472" y="44" text-anchor="middle" fill="#40c4ff" font-size="8" font-family="Space Grotesk">HLS/DASH</text>
+  <text x="472" y="56" text-anchor="middle" fill="#6b7d99" font-size="7" font-family="Space Grotesk">ABR Segments</text>
+  <!-- Reco engine -->
+  <text x="10" y="95" fill="#7c4dff" font-size="9" font-weight="600" font-family="Space Grotesk">RECOMMENDATION ENGINE</text>
+  <rect x="10" y="105" width="90" height="32" rx="6" fill="#131b2e" stroke="#7c4dff" stroke-width="1.2"/>
+  <text x="55" y="125" text-anchor="middle" fill="#7c4dff" font-size="8" font-family="Space Grotesk">User History</text>
+  <line x1="100" y1="121" x2="145" y2="121" stroke="#7c4dff" stroke-width="1.2" marker-end="url(#a5)" class="flow-line"/>
+  <rect x="150" y="105" width="100" height="32" rx="6" fill="#131b2e" stroke="#ff6b9d" stroke-width="1.2"/>
+  <text x="200" y="125" text-anchor="middle" fill="#ff6b9d" font-size="8" font-family="Space Grotesk">Candidate Gen</text>
+  <line x1="250" y1="121" x2="295" y2="121" stroke="#ff6b9d" stroke-width="1.2" marker-end="url(#a5)" class="flow-line"/>
+  <rect x="300" y="105" width="85" height="32" rx="6" fill="#131b2e" stroke="#ffd740" stroke-width="1.2"/>
+  <text x="342" y="125" text-anchor="middle" fill="#ffd740" font-size="8" font-family="Space Grotesk">ML Ranker</text>
+  <line x1="385" y1="121" x2="430" y2="121" stroke="#ffd740" stroke-width="1.2" marker-end="url(#a5)" class="flow-line"/>
+  <rect x="435" y="105" width="85" height="32" rx="6" fill="#131b2e" stroke="#64ffda" stroke-width="1.2"/>
+  <text x="477" y="125" text-anchor="middle" fill="#64ffda" font-size="8" font-family="Space Grotesk">Top 75 Titles</text>
+  <text x="10" y="158" fill="#6b7d99" font-size="7.5" font-family="Space Grotesk">95% of traffic served from ISP-local Open Connect boxes • 2000+ versions per title • Pre-computed recs updated daily</text>
+</svg>
+<div class="arch-label">Netflix — Streaming + Recommendation Engine Architecture</div>
+</div>
+</div>
+
+<!-- TikTok -->
+<div class="card">
+<div class="ct"><span class="n n3">18</span> Design TikTok</div>
+<span class="tag t-meta">Meta</span><span class="tag t-amz">Amazon</span><span class="tag t-ggl">Google</span><span class="tag t-dd">DoorDash</span><span class="diff d-h">Hard</span>
+<div class="a" style="margin-top:10px">
+<strong>A modern question increasingly asked at FAANG (2024-2026).</strong> Combines video processing with a recommendation-first architecture.<br><br>
+<strong>Requirements:</strong> Upload short videos (15s-3min), infinite scroll "For You Page" (FYP), follow creators, like/comment/share, duets/stitches, creator analytics.<br><br>
+<strong>What makes TikTok different from YouTube:</strong> The core product IS the recommendation engine, not search or subscriptions. FYP is 100% algorithmically driven for users who follow nobody.<br><br>
+<strong>Upload pipeline:</strong> Video → App Server → S3 raw → Transcoding queue → generate HLS segments (multiple resolutions) → CDN. Also: extract audio (for music matching), generate thumbnails, run content moderation (NSFW/violence detection ML model) before publishing.<br><br>
+<strong>For You Page (FYP) Algorithm:</strong><br>
+• <strong>Signals:</strong> Watch time (most important — did user watch full video?), replays, likes, shares, follows, comments, video info (hashtags, sounds, captions), device/location.<br>
+• <strong>Two-tower model:</strong> User embedding tower + Video embedding tower → compute similarity in real-time. Cold-start: show trending/diverse videos to new users, rapidly learn preferences from first 10 interactions.<br>
+• <strong>Serving:</strong> Pre-compute top ~500 candidates per user (batch pipeline). At request time, online ranker re-scores with latest signals → return top 30 → client pre-fetches next batch while user watches current.<br><br>
+<strong>Scale detail:</strong> Video metadata in Cassandra (high write throughput). Engagement events in Kafka → Flink streaming → update user embeddings in near-real-time. CDN handles 90%+ of video delivery.
+</div>
+</div>
+
+<!-- Distributed Message Queue -->
+<div class="card">
+<div class="ct"><span class="n n3">19</span> Design a Distributed Message Queue (Kafka)</div>
+<span class="tag t-amz">Amazon</span><span class="tag t-ms">Microsoft</span><span class="tag t-lnkd">LinkedIn</span><span class="tag t-uber">Uber</span><span class="diff d-h">Hard</span>
+<div class="a" style="margin-top:10px">
+<strong>Requirements:</strong> High throughput (millions of messages/sec), durable, ordered within partition, at-least-once delivery, consumer groups, retention-based (not delete after consume).<br><br>
+<strong>Architecture (Kafka model):</strong><br>
+• <strong>Topic:</strong> Logical channel for messages (e.g., "user-events", "payments").<br>
+• <strong>Partition:</strong> Topic split into N partitions. Each partition is an ordered, immutable append-only log. Partition = unit of parallelism.<br>
+• <strong>Broker:</strong> Server storing partitions. Partitions replicated across brokers (leader + ISR follower set). Leader handles all reads/writes for that partition.<br>
+• <strong>Producer:</strong> Sends message with key → hash(key) % N → routes to partition. Same key always goes to same partition (ordering guarantee).<br>
+• <strong>Consumer Group:</strong> Each partition consumed by exactly one consumer in the group. Add consumers = more parallelism (up to partition count).<br><br>
+<strong>Why append-only log is fast:</strong> Sequential disk writes (600MB/s) vs random writes (100KB/s). Zero-copy via sendfile() syscall. Page cache utilization. This is why Kafka beats traditional message brokers on throughput.<br><br>
+<strong>Delivery semantics:</strong> At-most-once (fire and forget), at-least-once (ack after process, may duplicate), exactly-once (idempotent producer + transactional consumer — Kafka supports this since 0.11).
+</div>
+</div>
+
+<!-- Search Engine -->
+<div class="card">
+<div class="ct"><span class="n n3">20</span> Design a Search Engine (Google Search)</div>
+<span class="tag t-ggl">Google</span><span class="tag t-amz">Amazon</span><span class="diff d-h">Hard</span>
+<div class="a" style="margin-top:10px">
+<strong>Requirements:</strong> Index billions of web pages. Return relevant results in <200ms. Spell correction. Ranking. Snippets.<br><br>
+<strong>Pipeline:</strong><br>
+1. <strong>Crawling:</strong> Web crawler fetches pages (see Problem #10). Prioritize by PageRank, freshness, link count.<br>
+2. <strong>Indexing:</strong> Parse HTML → extract text → tokenize → build inverted index (word → list of [docID, position, frequency]). Store in distributed index shards.<br>
+3. <strong>Serving:</strong> Query → tokenize → lookup each token in inverted index → intersect posting lists → score documents (TF-IDF, BM25, PageRank, freshness, user signals) → return top 10 with snippets.<br><br>
+<strong>PageRank:</strong> Model web as a directed graph. A page's rank = weighted sum of ranks of pages linking to it. Iterative computation until convergence. Pre-computed offline.<br>
+<strong>Scale:</strong> Shard index by document ID range. Each shard serves a subset. Scatter query to all shards → gather top results → merge and re-rank. Cache frequent queries in Redis.
+</div>
+</div>
+</div>
+
+<!-- ===== TAB 6: CHEAT SHEET ===== -->
+<div id="t6" class="tc">
+<span class="badge ba5">REFERENCE</span>
+<h2>System Design Cheat Sheet</h2>
+<p style="color:var(--muted);margin-bottom:20px">Quick-reference tables for your interview day.</p>
+
+<div class="card">
+<div class="ct">📊 SQL vs NoSQL Decision Matrix</div>
+<div class="a">
+<strong>Choose SQL when:</strong> Data is relational, need ACID transactions, complex queries with JOINs, data integrity is critical (banking, e-commerce orders).<br><br>
+<strong>Choose NoSQL when:</strong> Massive scale, flexible schema, high write throughput, denormalized data is acceptable, simple access patterns (key-value lookups, time-series).<br><br>
+<strong>Specific choices:</strong> PostgreSQL (relational + JSON), Cassandra (time-series, high writes), MongoDB (documents, flexible schema), DynamoDB (managed key-value, auto-scaling), Redis (cache, sessions, leaderboards), Elasticsearch (full-text search).
+</div>
+</div>
+
+<div class="card">
+<div class="ct">⚡ Latency Numbers Every Engineer Should Know</div>
+<pre style="color:var(--a1);font-size:.8rem">
+L1 cache reference           0.5 ns
+L2 cache reference             7 ns
+Main memory reference        100 ns
+SSD random read          150,000 ns   (150 μs)
+HDD seek                10M     ns   (10 ms)
+Network round trip (same DC)  500,000 ns (0.5 ms)
+Network round trip (CA→NL)  150M    ns  (150 ms)
+</pre>
+<div class="a"><strong>Takeaway:</strong> Memory is 1000x faster than SSD. SSD is 100x faster than HDD. Same-datacenter network is 300x faster than cross-continent. This is why caching and CDNs matter.</div>
+</div>
+
+<div class="card">
+<div class="ct">📐 Back-of-Envelope Estimation Quick Reference</div>
+<div class="a">
+<strong>1 day</strong> = 86,400 sec ≈ <strong>100K seconds</strong> (round up for quick math)<br>
+<strong>1 million requests/day</strong> ≈ <strong>12 QPS</strong> (1M / 86400)<br>
+<strong>1 billion requests/day</strong> ≈ <strong>12K QPS</strong><br><br>
+<strong>Storage:</strong> 1 char = 1 byte. 1 tweet (280 chars) ≈ 300 bytes. 1 photo ≈ 200KB. 1 min video ≈ 50MB.<br>
+<strong>1 TB</strong> = 1 trillion bytes = stores ~5 billion tweets or ~5 million photos or ~20K hours of video.
+</div>
+</div>
+
+<div class="card">
+<div class="ct">🗺️ Which System Design Problem to Expect at Which Company</div>
+<div class="a">
+<strong>Google:</strong> Google Maps, YouTube, Google Docs, Web Crawler, Distributed Cache, Typeahead Search, Search Engine, TikTok<br>
+<strong>Meta:</strong> Instagram (#1), WhatsApp, News Feed, TikTok, Google Docs, Live Streaming<br>
+<strong>Amazon:</strong> URL Shortener, E-commerce Checkout, Notification System, Payment System, Recommendation Engine, Delivery Tracking, Kafka/Message Queue<br>
+<strong>Microsoft:</strong> File Sharing (OneDrive), Distributed Cache, Chat System, Video Conferencing (Teams), Kafka<br>
+<strong>Uber:</strong> Ride Sharing, Food Delivery, Real-time Location, Surge Pricing, Payment System<br>
+<strong>Netflix:</strong> Video Streaming + Open Connect CDN, Recommendation Engine, A/B Testing Platform<br>
+<strong>Stripe:</strong> Payment Gateway, Rate Limiter, API Design, Idempotency, Double-Entry Ledger<br>
+<strong>Apple:</strong> Key-Value Store, iMessage, App Store Search, Photo Storage (iCloud)<br>
+<strong>LinkedIn:</strong> Rate Limiter, Typeahead Search, Kafka/Message Queue, Notification System
+</div>
+</div>
+
+<div class="card">
+<div class="ct">🔑 Golden Rules for Interview Day</div>
+<div class="a">
+<strong>1.</strong> Never jump to solution. Spend first 5 min on requirements.<br>
+<strong>2.</strong> Start simple, then scale. Monolith → Microservices → Distributed.<br>
+<strong>3.</strong> Every decision must have a <em>why</em>. "I chose Cassandra because..." not "Let's use Cassandra."<br>
+<strong>4.</strong> Trade-offs > perfection. Interviewers want to hear "this gains X but costs Y."<br>
+<strong>5.</strong> Numbers matter. Estimate scale before designing. QPS, storage, bandwidth.<br>
+<strong>6.</strong> Think about failure. "What happens if this component goes down?"<br>
+<strong>7.</strong> Communicate constantly. Silence = bad. Even saying "I'm thinking about..." is better.<br>
+<strong>8.</strong> Don't memorize — understand the building blocks and compose them.
+</div>
+</div>
+
+<div class="tip"><strong>💡 Final Advice:</strong> System Design isn't about memorizing solutions — it's about composing building blocks to solve a unique problem under constraints. If you understand the 12 building blocks in Tab 1 and practice the framework in Tab 2, you can tackle ANY question they throw at you.</div>
+</div>
+
+<footer class="footer">
+  <div class="shield">
+    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 2.18l7 3.12v4.7c0 4.83-3.4 9.36-7 10.5-3.6-1.14-7-5.67-7-10.5V6.3l7-3.12z"/></svg>
+    © 2026 Karthik — SDE-IC2 @ServiceNow
+  </div>
+  <p>Created with ❤️ by <strong style="color:var(--a1)">Karthik</strong> — SDE-IC2 @ServiceNow | Content Creator</p>
+  <p style="margin-top:6px">
+    <a href="https://www.youtube.com/@Karthik_KnowledgeHub" target="_blank">📺 YouTube — Karthik_Knowledge Hub</a> &nbsp;•&nbsp;
+    <a href="https://www.linkedin.com/in/karthik" target="_blank">💼 LinkedIn</a> &nbsp;•&nbsp;
+    <a href="https://github.com/karthik" target="_blank">🐙 GitHub</a>
+  </p>
+  <p class="legal">This content is original work by Karthik. Unauthorized reproduction or distribution is prohibited.</p>
+</footer>
+
+<script>
+function st(id,el){
+  document.querySelectorAll('.tc').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  el.classList.add('active');
+  window.scrollTo({top:document.querySelector('.tabs').offsetTop,behavior:'smooth'});
+}
+document.addEventListener('copy',function(e){
+  var s=window.getSelection().toString();
+  if(s.length>30){e.preventDefault();
+    e.clipboardData.setData('text/plain',s+'\n\n— © Karthik | SDE-IC2 @ServiceNow | Karthik_Knowledge Hub');}
+});
+</script>
+</body>
+</html>
